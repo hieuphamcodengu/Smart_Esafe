@@ -122,12 +122,20 @@ void loop() {
     }
     
     // Phát âm thanh beep liên tục (píp píp píp)
+    // Kiểm tra lại trạng thái sau mỗi chu kỳ để dừng kịp thời
     playBeep();
-    delay(100);  // Khoảng cách giữa các tiếng beep
-    playBeep();
+    if (!readMPU()) return;  // Kiểm tra lại, nếu đã đứng thì dừng ngay
     delay(100);
+    
     playBeep();
-    delay(300);  // Dừng 300ms trước chu kỳ tiếp theo
+    if (!readMPU()) return;
+    delay(100);
+    
+    playBeep();
+    if (!readMPU()) return;
+    delay(300);
+    
+    return;  // Return sớm để không chạy phần code sau
   }
   
   // Gửi dữ liệu mỗi 5 giây
