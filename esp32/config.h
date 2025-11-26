@@ -52,6 +52,9 @@
 // Relay Configuration
 #define RELAY_PIN 2                  // Chân điều khiển relay (D2/GPIO2)
 #define DEFAULT_SPEED_LIMIT 50       // Tốc độ giới hạn mặc định (km/h)
+#define SPEED_WARNING_DELAY 7000    // Thời gian cảnh báo trước khi kích relay (ms) - 7 giây
+#define SPEED_RELEASE_DELAY 60000    // Thời gian duy trì tốc độ thấp để mở relay (ms) - 60 giây
+#define SPEED_RELEASE_MARGIN 10.0    // Margin tốc độ để mở relay (km/h) - phải < (limit - 10)
 
 // SD Card Configuration
 #define SD_CS_PIN 5  // Chân CS cho SD card (GPIO5)

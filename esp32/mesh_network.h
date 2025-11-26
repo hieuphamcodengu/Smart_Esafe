@@ -49,12 +49,13 @@ void onDataRecv(const esp_now_recv_info *recv_info, const uint8_t *data, int len
   // Nếu node này có WiFi → relay lên MQTT
   if (isWiFiAvailable) {
     Serial.println("  ➡️ Relaying to MQTT...");
-    
+    double lat, lon;
+    getLocation(lat, lon);
     // Gửi dữ liệu nhờ lên MQTT
     publishDataViaMQTT(incomingData.clientId, 
                       incomingData.speed, 
-                      incomingData.latitude, 
-                      incomingData.longitude);
+                      lat, 
+                      lon);
   } else {
     Serial.println("  ⚠️ No WiFi - Data dropped");
   }

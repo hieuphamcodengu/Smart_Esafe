@@ -20,8 +20,6 @@ bool speed1Played = false;
 // Biến cho điều kiện mở relay
 bool waitingToRelease = false;
 unsigned long releaseWaitStart = 0;
-const unsigned long RELEASE_WAIT_TIME = 60000;  // 1 phút
-const float RELEASE_SPEED_MARGIN = 10.0;        // Dưới limit - 10 km/h
 
 /**
  * Khởi tạo relay
@@ -81,8 +79,8 @@ void controlRelay() {
     unsigned long speedingDuration = millis() - speedingStartTime;
     
     // Kiểm tra sau 15 giây vẫn quá tốc độ
-    if (speedingDuration >= 15000 && !speed1Played) {
-      Serial.println("⚠️⚠️ STILL SPEEDING AFTER 15s - ACTIVATING RELAY!");
+    if (speedingDuration >= SPEED_WARNING_DELAY && !speed1Played) {
+      Serial.printf("⚠️⚠️ STILL SPEEDING AFTER %d seconds - ACTIVATING RELAY!\n", SPEED_WARNING_DELAY / 1000);
       
       // Kích hoạt relay trước
       digitalWrite(RELAY_PIN, HIGH);
@@ -99,16 +97,16 @@ void controlRelay() {
     
     // Kiểm tra điều kiện mở relay (nếu đang chờ)
     if (waitingToRelease) {
-      float releaseThreshold = speedLimit - RELEASE_SPEED_MARGIN;
+      float releaseThreshold = speedLimit - SPEED_RELEASE_MARGIN;
       
       if (currentSpeed < releaseThreshold) {
-        // Tốc độ đã giảm xuống dưới (limit - 10)
+        // Tốc độ đã giảm xuống dưới (limit - margin)
         unsigned long belowThresholdTime = millis() - releaseWaitStart;
         
-        if (belowThresholdTime >= RELEASE_WAIT_TIME) {
-          // Đã duy trì dưới ngưỡng trong 1 phút
-          Serial.printf("✓ Speed maintained below %.1f km/h for 1 min - RELEASING RELAY\n", 
-                        releaseThreshold);
+        if (belowThresholdTime >= SPEED_RELEASE_DELAY) {
+          // Đã duy trì dưới ngưỡng đủ lâu
+          Serial.printf("✓ Speed maintained below %.1f km/h for %d seconds - RELEASING RELAY\n", 
+                        releaseThreshold, SPEED_RELEASE_DELAY / 1000);
           
           digitalWrite(RELAY_PIN, LOW);
           relayState = false;

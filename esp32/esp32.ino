@@ -121,20 +121,6 @@ void loop() {
       setFallAlertSent();
     }
     
-    // Phát âm thanh beep liên tục (píp píp píp)
-    // Kiểm tra lại trạng thái sau mỗi chu kỳ để dừng kịp thời
-    playBeep();
-    if (!readMPU()) return;  // Kiểm tra lại, nếu đã đứng thì dừng ngay
-    delay(100);
-    
-    playBeep();
-    if (!readMPU()) return;
-    delay(100);
-    
-    playBeep();
-    if (!readMPU()) return;
-    delay(300);
-    
     return;  // Return sớm để không chạy phần code sau
   }
   
