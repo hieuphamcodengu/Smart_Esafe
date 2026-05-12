@@ -141,4 +141,26 @@ void setFallAlertSent() {
   fallAlertSent = true;
 }
 
+/**
+ * In dữ liệu IMU để debug kiểm tra ngã
+ */
+void printIMUDebug() {
+  int16_t ax, ay, az;
+  mpu.getAcceleration(&ax, &ay, &az);
+
+  float pitchRaw, rollRaw;
+  calculateAngles(ax, ay, az, pitchRaw, rollRaw);
+
+  float pitch = pitchRaw - pitchOffset;
+  float roll  = rollRaw  - rollOffset;
+
+  bool fallen = (abs(pitch) > FALL_DETECTION_ANGLE || abs(roll) > FALL_DETECTION_ANGLE);
+
+  Serial.printf("[IMU] ax:%6d ay:%6d az:%6d | Pitch:%7.2f° Roll:%7.2f° | Threshold:±%d° | %s\n",
+                ax, ay, az,
+                pitch, roll,
+                FALL_DETECTION_ANGLE,
+                fallen ? ">>> FALLEN <<<" : "OK");
+}
+
 #endif

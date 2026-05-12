@@ -16,6 +16,11 @@ extern PubSubClient mqttClient;
 unsigned long lastMQTTPublish = 0;
 const unsigned long MQTT_PUBLISH_INTERVAL = 5000;  // Gửi mỗi 5 giây
 
+// Chế độ debug tốc độ
+bool speedDebugMode = false;
+bool rawEncoderMode = false;
+bool imuDebugMode = false;
+
 void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
   delay(500);  // Chờ serial ổn định
@@ -80,6 +85,57 @@ void setup() {
 }
 
 void loop() {
+  // Xử lý lệnh từ Serial
+  if (Serial.available() > 0) {
+    char cmd = Serial.read();
+    if (cmd == 'T' || cmd == 't') {
+      speedDebugMode = true;
+      rawEncoderMode = false;
+      Serial.println(">>> Speed debug mode ON. Send 'N' to exit. <<<");
+    } else if (cmd == 'A' || cmd == 'a') {
+      rawEncoderMode = true;
+      speedDebugMode = false;
+      imuDebugMode = false;
+      Serial.println(">>> Raw encoder mode ON. Send 'N' to exit. <<<");
+    } else if (cmd == 'I' || cmd == 'i') {
+      imuDebugMode = true;
+      speedDebugMode = false;
+      rawEncoderMode = false;
+      Serial.println(">>> IMU debug mode ON. Send 'N' to exit. <<<");
+    } else if (cmd == 'N' || cmd == 'n') {
+      speedDebugMode = false;
+      rawEncoderMode = false;
+      imuDebugMode = false;
+      Serial.println(">>> Normal mode. <<<");
+    }
+  }
+
+  // Chế độ debug tốc độ: chỉ in tốc độ và encoder
+  if (speedDebugMode) {
+    Serial.printf("[DEBUG] Speed: %.2f km/h | Encoder pulses/s: %lu\n",
+                  getSpeed(), getPulsesPerSec());
+    delay(500);
+    return;
+  }
+
+  // Chế độ IMU debug: in góc pitch/roll và trạng thái ngã
+  if (imuDebugMode) {
+    printIMUDebug();
+    delay(200);
+    return;
+  }
+
+  // Chế độ raw encoder: in trạng thái HIGH/LOW của chân cảm biến
+  if (rawEncoderMode) {
+    int pinState = digitalRead(SPEED_SENSOR_PIN);
+    Serial.printf("[RAW] GPIO%d = %s (%d)\n",
+                  SPEED_SENSOR_PIN,
+                  pinState == HIGH ? "HIGH" : "LOW",
+                  pinState);
+    delay(50);
+    return;
+  }
+
   // Kiểm tra lại WiFi định kỳ (nếu đang ở chế độ mesh-only)
   recheckWiFi();
   
@@ -129,7 +185,6 @@ void loop() {
     lastMQTTPublish = millis();
     
     // Lấy dữ liệu GPS
-    double lat, lon;
     getLocation(lat, lon);
     
     // Lấy tốc độ từ Hall sensor

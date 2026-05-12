@@ -5,15 +5,15 @@
 #define SERIAL_BAUD_RATE 115200
 
 // WiFi Configuration
-#define WIFI_SSID "Esafe-id-01"
-#define WIFI_PASSWORD "3141592654"
+#define WIFI_SSID "Esafe"
+#define WIFI_PASSWORD "88888888"
 
 // WiFi phụ (dự phòng)
-#define WIFI_SSID_BACKUP "HP"
-#define WIFI_PASSWORD_BACKUP "3141592654"
+#define WIFI_SSID_BACKUP "Esafe"
+#define WIFI_PASSWORD_BACKUP "88888888"
 
 // MQTT Configuration
-#define MQTT_SERVER "526149152b184bce88dda61234c737f8.s1.eu.hivemq.cloud"
+#define MQTT_SERVER "4b7ef9fcd7844435b6671b0aa5b80550.s1.eu.hivemq.cloud"
 #define MQTT_PORT 8883
 #define MQTT_USER "Esp32"
 #define MQTT_PASSWORD "Hp123456"
@@ -45,7 +45,7 @@
 #define DEFAULT_LNG 108.037230
 
 // Speed Sensor Configuration - Hall Sensor
-#define SPEED_SENSOR_PIN 13          // Chân đọc xung Hall sensor
+#define SPEED_SENSOR_PIN 32          // Chân đọc xung Hall sensor
 #define PULSES_PER_REVOLUTION 8      // 4 nam châm x 2 cạnh = 8 xung/vòng
 #define KMPH_PER_PULSE_PER_SEC 0.75f // Hệ số quy đổi từ thực nghiệm
 
@@ -76,4 +76,6 @@
 // Loop delay
 #define LOOP_DELAY_MS 500  // Tăng delay để giảm tải CPU và RAM
 
+
+double lat, lon;
 #endif

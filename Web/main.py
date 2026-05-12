@@ -7,7 +7,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
 # HiveMQ Cloud connection details
-HIVEMQ_HOST = "526149152b184bce88dda61234c737f8.s1.eu.hivemq.cloud"
+HIVEMQ_HOST = "4b7ef9fcd7844435b6671b0aa5b80550.s1.eu.hivemq.cloud"
 HIVEMQ_PORT = 8883
 HIVEMQ_USERNAME = "Server"  # Thay bằng username của bạn
 HIVEMQ_PASSWORD = "Hp123456"  # Thay bằng password của bạn
@@ -17,7 +17,7 @@ TOPIC_PUBLISH = "ESP32_sub"
 TOPIC_SUBSCRIBE = "ESP32_pub"
 
 # Telegram Bot Token
-TELEGRAM_TOKEN = "8283970519:AAF_OYJ0T3YMrnWWWslYdqiO4_aaAJL2PX8"
+TELEGRAM_TOKEN = "8587206474:AAHU7_vryZ0ChaL5I7WENzM-UmRqBV_Q0es"
 
 # States cho conversation
 WAITING_DEVICE_ID, WAITING_SPEED = range(2)
@@ -385,26 +385,26 @@ client.on_disconnect = on_disconnect
 
 async def main():
     global telegram_app, bot_loop
-    
-    # Lưu event loop hiện tại
-    bot_loop = asyncio.get_event_loop()
-    
+
+    # Lưu event loop hiện tại để dùng với run_coroutine_threadsafe
+    bot_loop = asyncio.get_running_loop()
+
     # Kết nối MQTT
     print(f"Đang kết nối đến MQTT {HIVEMQ_HOST}:{HIVEMQ_PORT}...")
     client.connect(HIVEMQ_HOST, HIVEMQ_PORT, keepalive=60)
     client.loop_start()
     print("✅ MQTT đã kết nối!")
-    
+
     # Tạo Telegram Bot Application
     application = Application.builder().token(TELEGRAM_TOKEN).build()
     telegram_app = application  # Lưu vào biến global
-    
+
     # Thêm handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("logout", logout))
     application.add_handler(CommandHandler("check", check_location))
-    
+
     # Conversation handler cho /add
     add_conv_handler = ConversationHandler(
         entry_points=[CommandHandler("add", add_device)],
@@ -414,7 +414,7 @@ async def main():
         fallbacks=[CommandHandler("cancel", cancel)],
     )
     application.add_handler(add_conv_handler)
-    
+
     # Conversation handler cho /speed
     speed_conv_handler = ConversationHandler(
         entry_points=[CommandHandler("speed", set_speed)],
@@ -424,17 +424,26 @@ async def main():
         fallbacks=[CommandHandler("cancel", cancel)],
     )
     application.add_handler(speed_conv_handler)
-    
-    # Chạy bot
+
+    # Chạy bot dùng API thấp hơn để tránh conflict event loop với nest_asyncio
     print("✅ Telegram Bot đang chạy...")
     print("Bot đang lắng nghe tin nhắn. Nhấn Ctrl+C để thoát.")
-    await application.run_polling()
+    async with application:
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
+        try:
+            # Giữ chương trình chạy cho đến khi bị hủy
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            pass
+        finally:
+            await application.updater.stop()
+            await application.stop()
 
 if __name__ == "__main__":
+    import asyncio
     try:
-        import asyncio
-        import nest_asyncio
-        nest_asyncio.apply()
         asyncio.run(main())
     except KeyboardInterrupt:
         print("\n⏹ Đang dừng bot...")
